@@ -1,0 +1,5 @@
+1. Instalar dependencias:
+npm install
+
+2. Rodar o projeto:
+node server.js

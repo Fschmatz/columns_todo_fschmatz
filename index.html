@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js"></script>
+    <title>Columns Todo</title>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Column 1: Main Folders -->
+        <div class="column">
+            <div class="column-header">
+                <div class="column-title">Folders</div>
+                <div class="input-container">
+                    <input type="text" class="input-field" id="folder-input" placeholder="Add folder...">
+                    <button class="add-button" onclick="addFolder()">Add</button>
+                </div>
+            </div>
+            <div class="items-container" id="folders-container">
+                <div class="empty-state">No folders yet. Add one above!</div>
+            </div>
+        </div>
+
+        <!-- Column 2: Subfolders/Tasks -->
+        <div class="column">
+            <div class="column-header">
+                <div class="column-title" id="subfolder-title">Select a folder</div>
+                <div class="input-container">
+                    <div class="type-switch-icons">
+                        <button class="switch-btn active" id="folder-switch" onclick="setSubfolderType('folder')"
+                            title="Add Folder" disabled>
+                            <i class="fa-solid fa-folder"></i>
+                        </button>
+                        <button class="switch-btn" id="task-switch" onclick="setSubfolderType('task')" title="Add Task"
+                            disabled>
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                    </div>
+                    <input type="text" class="input-field" id="subfolder-input" placeholder="Add folder..." disabled>
+                    <button class="add-button" id="subfolder-add-btn" onclick="addSubfolderItem()" disabled>Add</button>
+                </div>
+            </div>
+            <div class="items-container" id="subfolders-container">
+                <div class="empty-state">Select a folder to view its contents</div>
+            </div>
+        </div>
+
+        <!-- Column 3: Tasks -->
+        <div class="column">
+            <div class="column-header">
+                <div class="column-title" id="tasks-title">Select an item</div>
+                <div class="input-container">
+                    <input type="text" class="input-field" id="task-input" placeholder="Add task..." disabled>
+                    <button class="add-button" id="task-add-btn" onclick="addTask()" disabled>Add</button>
+                </div>
+            </div>
+            <div class="items-container" id="tasks-container">
+                <div class="empty-state">Select an item to view its tasks</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
