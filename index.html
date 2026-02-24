@@ -16,11 +16,31 @@
         <!-- Column 1: Main Folders -->
         <div class="column">
             <div class="column-header">
-                <div class="column-title">Folders</div>
+                <div class="header-top">
+                    <button class="hamburger-btn" onclick="toggleMenu()" title="Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="column-title">Folders</div>
+
+                    <div id="hamburger-menu" class="hamburger-menu hidden">
+                        <div class="menu-item" onclick="exportBackup()">
+                            <i class="fa-solid fa-file-export"></i> Export Backup
+                        </div>
+                        <div class="menu-item" onclick="triggerImport()">
+                            <i class="fa-solid fa-file-import"></i> Import Backup
+                        </div>
+                        <div class="menu-footer">
+                            v<span id="app-version">2.2.0</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="input-container">
                     <input type="text" class="input-field" id="folder-input" placeholder="Add folder...">
                     <button class="add-button" onclick="addFolder()">Save</button>
                 </div>
+                <!-- Hidden file input for import -->
+                <input type="file" id="import-input" style="display: none;" accept=".json"
+                    onchange="importBackup(event)">
             </div>
             <div class="items-container" id="folders-container">
                 <div class="empty-state">No folders yet. Add one above!</div>
@@ -30,7 +50,9 @@
         <!-- Column 2: Subfolders/Tasks -->
         <div class="column">
             <div class="column-header">
-                <div class="column-title" id="subfolder-title">Select a folder</div>
+                <div class="header-top">
+                    <div class="column-title" id="subfolder-title">Select a folder</div>
+                </div>
                 <div class="input-container">
                     <div class="type-switch-icons">
                         <button class="switch-btn active" id="folder-switch" onclick="setSubfolderType('folder')"
@@ -55,7 +77,9 @@
         <!-- Column 3: Tasks -->
         <div class="column">
             <div class="column-header">
-                <div class="column-title" id="tasks-title">Select an item</div>
+                <div class="header-top">
+                    <div class="column-title" id="tasks-title">Select an item</div>
+                </div>
                 <div class="input-container">
                     <input type="text" class="input-field" id="task-input" placeholder="Add task..." disabled>
                     <button class="add-button" id="task-add-btn" onclick="addTask()" disabled>Save</button>
