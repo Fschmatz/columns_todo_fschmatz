@@ -6,7 +6,7 @@ let appData = {
 let selectedFolder = null;
 let selectedSubfolder = null;
 let nextId = 1;
-let subfolderType = "folder"; // 'folder' or 'task'
+let subfolderType = "task"; // 'folder' or 'task'
 let editingFolderId = null;
 let editingSubfolderItemId = null;
 let editingTaskId = null;
@@ -243,13 +243,13 @@ function renderFolders() {
              onclick="selectFolder(${folder.id})">
             <span>${folder.name}</span>
             <div style="display: flex; gap: 4px;">
-                <button class="action-button done-button" onclick="event.stopPropagation(); toggleFolderDone(${folder.id})">
+                <button class="action-button done-button" onclick="event.stopPropagation(); toggleFolderDone(${folder.id}, event)">
                     <i class="fa-solid ${folder.done ? "fa-circle-check" : "fa-check"}"></i>
                 </button>
                 <button class="action-button edit-button" onclick="event.stopPropagation(); startEditFolder(${folder.id})">
                     <i class="fa-regular fa-pen-to-square"></i>
                 </button>
-                <button class="action-button delete-button" onclick="event.stopPropagation(); deleteFolder(${folder.id})">
+                <button class="action-button delete-button" onclick="event.stopPropagation(); deleteFolder(${folder.id}, event)">
                     <i class="fa-regular fa-trash-can"></i>
                 </button>
             </div>
@@ -259,12 +259,13 @@ function renderFolders() {
         .join("");
 }
 
-function toggleFolderDone(folderId) {
+function toggleFolderDone(folderId, event) {
     const folder = appData.folders.find((f) => f.id === folderId);
     if (folder) {
         const isNowDone = !folder.done;
         const status = folder.done ? "undone" : "done";
-        if (confirm(`Are you sure you want to mark this folder as ${status}?`)) {
+
+        showConfirmPopup(event, `Mark this folder as ${status}?`, () => {
             folder.done = isNowDone;
 
             // If marked as done, also mark all tasks inside as completed
@@ -290,7 +291,7 @@ function toggleFolderDone(folderId) {
             renderFolders();
             renderSubfolders();
             renderTasks();
-        }
+        });
     }
 }
 
@@ -343,7 +344,7 @@ function renderSubfolders() {
                         <button class="action-button edit-button" onclick="startEditSubfolderItem(${item.id})">
                             <i class="fa-regular fa-pen-to-square"></i>
                         </button>
-                        <button class="action-button delete-button" onclick="deleteSubfolderItem(${item.id})">
+                        <button class="action-button delete-button" onclick="deleteSubfolderItem(${item.id}, event)">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     </div>
@@ -358,7 +359,7 @@ function renderSubfolders() {
                         <button class="action-button edit-button" onclick="event.stopPropagation(); startEditSubfolderItem(${item.id})">
                             <i class="fa-regular fa-pen-to-square"></i>
                         </button>
-                        <button class="action-button delete-button" onclick="event.stopPropagation(); deleteSubfolderItem(${item.id})">
+                        <button class="action-button delete-button" onclick="event.stopPropagation(); deleteSubfolderItem(${item.id}, event)">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     </div>
@@ -401,7 +402,7 @@ function renderTasks() {
                 <button class="action-button edit-button" onclick="startEditTask(${task.id})">
                     <i class="fa-regular fa-pen-to-square"></i>
                 </button>
-                <button class="action-button delete-button" onclick="deleteTask(${task.id})">
+                <button class="action-button delete-button" onclick="deleteTask(${task.id}, event)">
                     <i class="fa-regular fa-trash-can"></i>
                 </button>
             </div>
@@ -459,81 +460,76 @@ function toggleSubfolderTask(taskId) {
     }
 }
 
-function deleteFolder(folderId) {
-    if (
-        !confirm(
-            "Are you sure you want to delete this folder and all its contents?",
-        )
-    )
-        return;
+function deleteFolder(folderId, event) {
+    showConfirmPopup(event, "Delete this folder and all its contents?", () => {
+        appData.folders = appData.folders.filter((f) => f.id !== folderId);
 
-    appData.folders = appData.folders.filter((f) => f.id !== folderId);
+        if (editingFolderId === folderId) {
+            editingFolderId = null;
+            document.getElementById("folder-input").value = "";
+        }
 
-    if (editingFolderId === folderId) {
-        editingFolderId = null;
-        document.getElementById("folder-input").value = "";
-    }
+        if (selectedFolder?.id === folderId) {
+            selectedFolder = null;
+            selectedSubfolder = null;
+            document.getElementById("subfolder-input").disabled = true;
+            document.getElementById("subfolder-add-btn").disabled = true;
+            document.getElementById("folder-switch").disabled = true;
+            document.getElementById("task-switch").disabled = true;
+            document.getElementById("task-input").disabled = true;
+            document.getElementById("task-add-btn").disabled = true;
+        }
 
-    if (selectedFolder?.id === folderId) {
-        selectedFolder = null;
-        selectedSubfolder = null;
-        document.getElementById("subfolder-input").disabled = true;
-        document.getElementById("subfolder-add-btn").disabled = true;
-        document.getElementById("folder-switch").disabled = true;
-        document.getElementById("task-switch").disabled = true;
-        document.getElementById("task-input").disabled = true;
-        document.getElementById("task-add-btn").disabled = true;
-    }
-
-    saveToServer();
-    renderFolders();
-    renderSubfolders();
-    renderTasks();
+        saveToServer();
+        renderFolders();
+        renderSubfolders();
+        renderTasks();
+    });
 }
 
-function deleteSubfolderItem(itemId) {
+function deleteSubfolderItem(itemId, event) {
     if (!selectedFolder) return;
 
-    if (!confirm("Are you sure you want to delete this item?")) return;
+    showConfirmPopup(event, "Delete this item?", () => {
+        selectedFolder.items = selectedFolder.items.filter(
+            (item) => item.id !== itemId,
+        );
 
-    selectedFolder.items = selectedFolder.items.filter(
-        (item) => item.id !== itemId,
-    );
+        if (editingSubfolderItemId === itemId) {
+            editingSubfolderItemId = null;
+            document.getElementById("subfolder-input").value = "";
+            document.getElementById("folder-switch").disabled = false;
+            document.getElementById("task-switch").disabled = false;
+        }
 
-    if (editingSubfolderItemId === itemId) {
-        editingSubfolderItemId = null;
-        document.getElementById("subfolder-input").value = "";
-        document.getElementById("folder-switch").disabled = false;
-        document.getElementById("task-switch").disabled = false;
-    }
+        if (selectedSubfolder?.id === itemId) {
+            selectedSubfolder = null;
+            document.getElementById("task-input").disabled = true;
+            document.getElementById("task-add-btn").disabled = true;
+        }
 
-    if (selectedSubfolder?.id === itemId) {
-        selectedSubfolder = null;
-        document.getElementById("task-input").disabled = true;
-        document.getElementById("task-add-btn").disabled = true;
-    }
-
-    saveToServer();
-    renderSubfolders();
-    renderTasks();
+        saveToServer();
+        renderSubfolders();
+        renderTasks();
+    });
 }
 
-function deleteTask(taskId) {
+function deleteTask(taskId, event) {
     if (!selectedSubfolder) return;
 
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    showConfirmPopup(event, "Delete this task?", () => {
+        selectedSubfolder.items = selectedSubfolder.items.filter(
+            (task) => task.id !== taskId,
+        );
 
-    selectedSubfolder.items = selectedSubfolder.items.filter(
-        (task) => task.id !== taskId,
-    );
+        if (editingTaskId === taskId) {
+            editingTaskId = null;
+            document.getElementById("task-input").value = "";
+        }
 
-    if (editingTaskId === taskId) {
-        editingTaskId = null;
-        document.getElementById("task-input").value = "";
-    }
-
-    saveToServer();
-    renderTasks();
+        saveToServer();
+        renderTasks();
+    });
 }
 
 function toggleTask(taskId) {
@@ -580,6 +576,17 @@ document.addEventListener("DOMContentLoaded", async function () {
             !menu.contains(event.target) &&
             !btn.contains(event.target)) {
             menu.classList.add("hidden");
+        }
+    });
+
+    // Close confirmation popup when clicking outside
+    document.addEventListener("click", function (event) {
+        const popup = document.querySelector(".confirm-popup");
+        if (popup && !popup.contains(event.target)) {
+            // Check if we clicked on a delete button (which should open a NEW popup)
+            if (!event.target.closest(".delete-button") && !event.target.closest(".done-button")) {
+                popup.remove();
+            }
         }
     });
 });
@@ -629,7 +636,7 @@ function importBackup(event) {
         try {
             const importedData = JSON.parse(e.target.result);
             if (importedData && Array.isArray(importedData.folders)) {
-                if (confirm("Are you sure you want to import this backup? It will replace all current data.")) {
+                showConfirmPopup(null, "Import backup? It will replace all CURRENT data.", async () => {
                     appData.folders = importedData.folders;
                     nextId = importedData.nextId || 1;
                     await saveToServer();
@@ -640,9 +647,7 @@ function importBackup(event) {
                     renderFolders();
                     renderSubfolders();
                     renderTasks();
-
-                    alert("Backup imported successfully!");
-                }
+                }, true); // center=true
             } else {
                 alert("Invalid backup file format.");
             }
@@ -655,4 +660,66 @@ function importBackup(event) {
         toggleMenu();
     };
     reader.readAsText(file);
+}
+
+function showConfirmPopup(event, message, onConfirm, center = false) {
+    // Remove existing popup if any
+    const existing = document.querySelector(".confirm-popup");
+    if (existing) existing.remove();
+
+    const popup = document.createElement("div");
+    popup.className = "confirm-popup";
+    popup.innerHTML = `
+        <div class="confirm-popup-header">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span class="confirm-popup-message">${message}</span>
+        </div>
+        <div class="confirm-popup-buttons">
+            <button class="confirm-popup-btn cancel">Cancel</button>
+            <button class="confirm-popup-btn ok">OK</button>
+        </div>
+        ${center ? "" : '<div class="confirm-popup-arrow"></div>'}
+    `;
+
+    document.body.appendChild(popup);
+
+    const cancelBtn = popup.querySelector(".cancel");
+    const okBtn = popup.querySelector(".ok");
+
+    cancelBtn.onclick = () => popup.remove();
+    okBtn.onclick = () => {
+        onConfirm();
+        popup.remove();
+    };
+
+    if (center) {
+        popup.style.top = "50%";
+        popup.style.left = "50%";
+        popup.style.transform = "translate(-50%, -50%)";
+    } else if (event) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const popupRect = popup.getBoundingClientRect();
+        const padding = 10;
+        const windowWidth = window.innerWidth;
+
+        // Desired position (centered on button)
+        let left = rect.left + rect.width / 2 - popupRect.width / 2;
+        let top = rect.top - popupRect.height - 10;
+
+        // Constrain horizontally
+        const minLeft = padding;
+        const maxLeft = windowWidth - popupRect.width - padding;
+        const actualLeft = Math.max(minLeft, Math.min(maxLeft, left));
+
+        popup.style.top = `${top + window.scrollY}px`;
+        popup.style.left = `${actualLeft + window.scrollX}px`;
+
+        // Position arrow
+        const arrow = popup.querySelector(".confirm-popup-arrow");
+        if (arrow) {
+            // Arrow should stay centered over the button relative to the popup
+            const arrowLeft = rect.left + rect.width / 2 - actualLeft - 6; // 6 is half arrow width
+            arrow.style.left = `${arrowLeft}px`;
+        }
+    }
 }

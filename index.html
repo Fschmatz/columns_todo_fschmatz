@@ -55,16 +55,16 @@
                 </div>
                 <div class="input-container">
                     <div class="type-switch-icons">
-                        <button class="switch-btn active" id="folder-switch" onclick="setSubfolderType('folder')"
-                            title="Add Folder" disabled>
-                            <i class="fa-solid fa-folder"></i>
-                        </button>
-                        <button class="switch-btn" id="task-switch" onclick="setSubfolderType('task')" title="Add Task"
+                        <button class="switch-btn active" id="task-switch" onclick="setSubfolderType('task')" title="Add Task"
                             disabled>
                             <i class="fa-solid fa-check"></i>
                         </button>
+                        <button class="switch-btn" id="folder-switch" onclick="setSubfolderType('folder')"
+                            title="Add Folder" disabled>
+                            <i class="fa-solid fa-folder"></i>
+                        </button>
                     </div>
-                    <input type="text" class="input-field" id="subfolder-input" placeholder="Add folder..." disabled>
+                    <input type="text" class="input-field" id="subfolder-input" placeholder="Add task..." disabled>
                     <button class="add-button" id="subfolder-add-btn" onclick="addSubfolderItem()"
                         disabled>Save</button>
                 </div>
